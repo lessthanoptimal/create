@@ -27,6 +27,9 @@ public class CreateDriver
 	public static final int PACKET_DISTANCE = 19;
 	public static final int PACKET_ROTATED = 20;
 
+	public static final int PACKET_BATTERY_CHARGE = 25;
+	public static final int PACKET_CARGOBAY_ANALOG = 33;
+
 	SerialPort serialPort;
 	InputStream in;
 	OutputStream out;
@@ -39,6 +42,8 @@ public class CreateDriver
 	boolean sensorCliffFrontLeft;
 	boolean sensorCliffFrontRight;
 	boolean sensorCliffRight;
+	int cargobayAnalog;
+	int batteryCharge;
 
 	// odometry
 	final Se2_F64 location = new Se2_F64();
@@ -118,6 +123,8 @@ public class CreateDriver
 
 			// make sure the robot isn't moving
 			sendWheelVelocity(0,0);
+			// turn the kinect off to save battery
+			sendKinect(false);
 			out.close();
 
 		} catch (IOException e)
@@ -165,18 +172,26 @@ public class CreateDriver
 		send(dataOut,0,5);
 	}
 
+	public synchronized void sendKinect( boolean turnOn ) {
+		dataOut[0] = (byte)147;
+		dataOut[1] = (byte)(turnOn ? 0x02 : 0);
+		send(dataOut,0,2);
+	}
+
 	public synchronized void sendSensorRequest() {
 		dataOut[0] = (byte)148; //Sensor stream
-		dataOut[1] = 8;
-		dataOut[2] = PACKET_BUMP_WHEEL;//  bumps and wheel drops
-		dataOut[3] = PACKET_WALL;//  Wall
-		dataOut[4] = PACKET_CLIFF_LEFT;//  Cliff left
-		dataOut[5] = PACKET_CLIFF_FRONT_LEFT;// Cliff front left
-		dataOut[6] = PACKET_CLIFF_FRONT_RIGHT;// Cliff front right
-		dataOut[7] = PACKET_CLIFF_RIGHT;// Cliff right
-		dataOut[8] = PACKET_DISTANCE; // distance traveled
-		dataOut[9] = PACKET_ROTATED; // angle rotated
-		send(dataOut,0,10);
+		dataOut[1] = 10;
+		dataOut[2] = PACKET_BUMP_WHEEL;
+		dataOut[3] = PACKET_WALL;
+		dataOut[4] = PACKET_CLIFF_LEFT;
+		dataOut[5] = PACKET_CLIFF_FRONT_LEFT;
+		dataOut[6] = PACKET_CLIFF_FRONT_RIGHT;
+		dataOut[7] = PACKET_CLIFF_RIGHT;
+		dataOut[8] = PACKET_DISTANCE;
+		dataOut[9] = PACKET_ROTATED;
+		dataOut[10] = PACKET_BATTERY_CHARGE;
+		dataOut[11] = PACKET_CARGOBAY_ANALOG;
+		send(dataOut,0,12);
 	}
 
 	public synchronized void sendStreamPauseResume( boolean pause ) {
@@ -287,6 +302,14 @@ public class CreateDriver
 					angleDeg = (short) ((data[x++] & 0xFF) << 8 | (data[x] & 0xFF));
 					break;
 
+				case PACKET_CARGOBAY_ANALOG:
+					cargobayAnalog = (((data[x++] & 0xFF) << 8) | (data[x] & 0xFF));
+					break;
+
+				case PACKET_BATTERY_CHARGE:
+					batteryCharge = (((data[x++] & 0xFF) << 8) | (data[x] & 0xFF));
+					break;
+
 				default:
 					System.out.println("Unknown packet data type! " + (data[x - 1] & 0xFF));
 			}
@@ -327,6 +350,14 @@ public class CreateDriver
 
 	public boolean isBumpRight() {
 		return (sensorBumpWheel & 0x01) != 0;
+	}
+
+	public int getCargobayAnalog() {
+		return cargobayAnalog;
+	}
+
+	public int getBatteryCharge() {
+		return batteryCharge;
 	}
 
 	public void getLocation( Se2_F64 location ) {
@@ -418,18 +449,24 @@ public class CreateDriver
 		try {
 			CreateDriver serial = new CreateDriver("/dev/ttyUSB0");
 			serial.startTheRobot();
-         serial.sendWheelVelocity(200,100);
+			serial.sendWheelVelocity(200,100);
 			long start = System.currentTimeMillis();
 			Se2_F64 location = new Se2_F64();
+			long updateTime = 0;
 			while( start + 10000 > System.currentTimeMillis() ) {
 				serial.getLocation(location);
 
-				System.out.println("bump  left = "+serial.isBumpLeft()+" right "+serial.isBumpRight());
-				System.out.println("drop  left = "+serial.isWheelDropLeft()+" right "+serial.isWheelDropRight());
-				System.out.println("caster = "+serial.isWheelDropCaster());
-				System.out.println("x = "+location.getX()+" y = "+location.getY()+" yaw = "+location.getYaw());
+				if( serial.getSensorUpdatedTime() != updateTime ) {
+					updateTime = serial.getSensorUpdatedTime();
+					System.out.println("------------------------------- "+updateTime);
+					System.out.println("bump  left = " + serial.isBumpLeft() + " right " + serial.isBumpRight());
+					System.out.println("drop  left = " + serial.isWheelDropLeft() + " right " + serial.isWheelDropRight());
+					System.out.println("caster = " + serial.isWheelDropCaster());
+					System.out.println("x = " + location.getX() + " y = " + location.getY() + " yaw = " + location.getYaw());
+					System.out.println("Gryo " + serial.getCargobayAnalog() + "  battery = " + serial.getBatteryCharge());
 
-				Thread.sleep(200);
+					Thread.sleep(200);
+				}
 			}
 			serial.shutdown();
 			System.out.println("Done");

@@ -1,0 +1,12 @@
+- Logger for pose and camera
+- Compute camera centric ground coordinate system from found plane
+- Compute occupancy grid from a single camera image
+- Transform from odometry to camera motion estimates
+- Motion estimation
+  * ICP
+  * Odometry
+  * VO
+  * Combine together some how?
+- Code for learning robot motion
+- Code for learning location of robot body relative to camera
+- Code for learning to classify ground based on color and not just height
