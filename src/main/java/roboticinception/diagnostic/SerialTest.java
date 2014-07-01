@@ -1,4 +1,4 @@
-package roboticinception;
+package roboticinception.diagnostic;
 
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;

@@ -49,14 +49,19 @@ public class OccupancySingleImageApp {
 		// load the transform to ground plane plane
 		Se3_F64 cameraToGround = UtilIO.loadXML("cameraToGround.xml");
 
-		GridMapSpacialInfo mapSpacial = new GridMapSpacialInfo(0.1,3,0);
-		OccupancyGrid2D_F32 map = new ArrayGrid2D_F32(40,40);
+		double cellSize = 0.05;
+		int width = (int)(6.0/cellSize);
+
+		GridMapSpacialInfo mapSpacial = new GridMapSpacialInfo(0.05,0,-cellSize*width/2);
+		OccupancyGrid2D_F32 map = new ArrayGrid2D_F32(width,width);
 		PointCloudToOccupancy generatorMap = new PointCloudToOccupancy(cameraToGround,mapSpacial,map);
 
 		generatorMap.process(cloud.toList());
 
 		GridMapInteractionDisplay gui = new GridMapInteractionDisplay();
-		gui.setMap(mapSpacial,map);
+		gui.setMap(mapSpacial, map);
+		gui.getMapDisplay().setPixelsPerMeter(60);
+		gui.resizeToFitMap();
 
 		ShowImages.showWindow(gui,"Occupancy Grid");
 	}
