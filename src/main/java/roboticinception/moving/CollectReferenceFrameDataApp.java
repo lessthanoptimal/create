@@ -45,7 +45,7 @@ public class CollectReferenceFrameDataApp {
 
 		serial.sendWheelVelocity(200, 300);
 
-		while(timeStart+20000 > System.currentTimeMillis() ) {
+		while(timeStart+5000 > System.currentTimeMillis() ) {
 			if( serial.getSensorUpdatedTime() != updateTime ) {
 				updateTime = serial.getSensorUpdatedTime();
 				System.out.println("Logging odometry "+updateTime);
