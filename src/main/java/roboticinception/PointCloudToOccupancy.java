@@ -51,7 +51,7 @@ public class PointCloudToOccupancy {
 	 */
 	public void process( List<Point3D_F64> cloud ) {
 
-		map.setAll(0.5f);
+		map.clear();
 		for (int i = 0; i < pointsInCell.size(); i++) {
 			pointsInCell.get(i).reset();
 		}
