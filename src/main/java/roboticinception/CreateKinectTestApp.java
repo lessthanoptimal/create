@@ -56,10 +56,15 @@ public class CreateKinectTestApp {
 		// initialize the create
 		CreateDriver serial = new CreateDriver("/dev/ttyUSB0");
 		serial.startTheRobot();
+
 		serial.sendKinect(true);
 
-		System.out.println("Pausing for a second");
-		Thread.sleep(1000);
+		System.out.println("Pausing for a bit...");
+		for (int i = 0; i < 10; i++) {
+			System.out.print("*");
+			Thread.sleep(1000);
+		}
+		System.out.println();
 		System.out.println("Displaying kinect data");
 
 		Context kinect = Freenect.createContext();
@@ -67,8 +72,15 @@ public class CreateKinectTestApp {
 		if( kinect.numDevices() < 0 )
 			throw new RuntimeException("No kinect found!");
 
-		Device device = kinect.openDevice(0);
-
+		Device device;
+		try {
+			device = kinect.openDevice(0);
+		} catch( RuntimeException e ) {
+			e.printStackTrace();
+			serial.sendKinect(false);
+			serial.shutdown();
+			return;
+		}
 		device.setDepthFormat(DepthFormat.REGISTERED);
 		device.setVideoFormat(VideoFormat.RGB);
 
@@ -85,6 +97,7 @@ public class CreateKinectTestApp {
 			}
 		});
 
+		System.out.println("Streaming for a bit...");
 		long starTime = System.currentTimeMillis();
 		while( starTime+5000 > System.currentTimeMillis() ) {Thread.yield();}
 		System.out.println("Shutting down");
@@ -93,7 +106,8 @@ public class CreateKinectTestApp {
 		device.stopVideo();
 		device.close();
 		serial.sendKinect(false);
-		System.out.println("Drone");
+		serial.shutdown();
+		System.out.println("Done!");
 	}
 
 	protected void processDepth( FrameMode mode, ByteBuffer frame, int timestamp ) {

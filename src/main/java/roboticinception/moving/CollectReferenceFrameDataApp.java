@@ -8,6 +8,7 @@ import com.sun.jna.NativeLibrary;
 import georegression.struct.se.Se2_F64;
 import org.openkinect.freenect.*;
 import roboticinception.CreateDriver;
+import roboticinception.MiscOps;
 import roboticinception.TurtleBotLogger;
 
 import java.nio.ByteBuffer;
@@ -33,9 +34,16 @@ public class CollectReferenceFrameDataApp {
 
 		serial = new CreateDriver("/dev/ttyUSB0");
 		serial.startTheRobot();
-		serial.sendWheelVelocity(200,100);
+		serial.sendKinect(true);
 
-		initializeKinect();
+		MiscOps.sleep(5,"Warming up kinect");
+		if( !initializeKinect() ) {
+			serial.shutdown();
+			System.exit(0);
+		}
+		MiscOps.sleep(2,"Waiting for auto shutter to do its thing");
+
+		serial.sendWheelVelocity(200,150);
 	}
 
 	public void perform() {
@@ -58,6 +66,7 @@ public class CollectReferenceFrameDataApp {
 	}
 
 	public void shutdown() {
+		serial.sendDrive(0,0);
 		serial.shutdown();
 		logger.stop();
 		device.stopDepth();
@@ -65,13 +74,18 @@ public class CollectReferenceFrameDataApp {
 		device.close();
 	}
 
-	public void initializeKinect() {
+	public boolean initializeKinect() {
 		Context kinect = Freenect.createContext();
 
 		if( kinect.numDevices() < 0 )
 			throw new RuntimeException("No kinect found!");
 
-		device = kinect.openDevice(0);
+		try {
+			device = kinect.openDevice(0);
+		} catch( RuntimeException e ) {
+			e.printStackTrace();
+			return false;
+		}
 
 		device.setDepthFormat(DepthFormat.REGISTERED);
 		device.setVideoFormat(VideoFormat.RGB);
@@ -89,6 +103,7 @@ public class CollectReferenceFrameDataApp {
 			}
 		});
 
+		return true;
 	}
 
 	protected void processDepth( FrameMode mode, ByteBuffer frame, int timestamp ) {

@@ -12,6 +12,16 @@ import org.ejml.data.DenseMatrix64F;
  * @author Peter Abeles
  */
 public class MiscOps {
+
+	public static void sleep( int seconds , String message ) {
+		System.out.println(message);
+		for (int i = 0; i < 5; i++) {
+			System.out.print("*");
+			try {Thread.sleep(1000);} catch (InterruptedException ignore) {}
+		}
+		System.out.println();
+	}
+
 	public static Se3_F64 cameraToPlane( PlaneGeneral3D_F64 plane ) {
 		Point3D_F64 closest = ClosestPoint3D_F64.closestPoint(plane, new Point3D_F64(), null);
 

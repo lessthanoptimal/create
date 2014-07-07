@@ -125,6 +125,7 @@ public class CreateDriver
 			sendWheelVelocity(0,0);
 			// turn the kinect off to save battery
 			sendKinect(false);
+			try {Thread.sleep(250);} catch (InterruptedException e) {}
 			out.close();
 
 		} catch (IOException e)
@@ -174,7 +175,7 @@ public class CreateDriver
 
 	public synchronized void sendKinect( boolean turnOn ) {
 		dataOut[0] = (byte)147;
-		dataOut[1] = (byte)(turnOn ? 0x02 : 0);
+		dataOut[1] = (byte)(turnOn ? 0xFF : 0);
 		send(dataOut,0,2);
 	}
 

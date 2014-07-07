@@ -1,6 +1,13 @@
-- Logger for pose and camera
-- Compute camera centric ground coordinate system from found plane
-- Compute occupancy grid from a single camera image
+- synchronize RGB + depth images
+- Motion estimation debugging app
+  * Show input image
+  * Show feature tracks
+  * 2D overhead.  Odometry + VO
+  * 3D VO
+  * Can rewind
+
+
+
 - Transform from odometry to camera motion estimates
 - Motion estimation
   * ICP
