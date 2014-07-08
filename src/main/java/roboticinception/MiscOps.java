@@ -15,7 +15,7 @@ public class MiscOps {
 
 	public static void sleep( int seconds , String message ) {
 		System.out.println(message);
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < seconds; i++) {
 			System.out.print("*");
 			try {Thread.sleep(1000);} catch (InterruptedException ignore) {}
 		}
