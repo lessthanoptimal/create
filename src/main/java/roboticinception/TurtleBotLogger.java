@@ -7,6 +7,7 @@ import boofcv.struct.image.ImageUInt16;
 import boofcv.struct.image.ImageUInt8;
 import boofcv.struct.image.MultiSpectral;
 import org.ddogleg.struct.GrowQueue_I8;
+import roboticinception.rplidar.RpLidarScan;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,6 +25,7 @@ public class TurtleBotLogger {
 	public String directory;
 
 	PrintStream odometryOut;
+	PrintStream rplidarOut;
 
 	LoggerRgb loggerRgb;
 	LoggerDepth loggerDepth;
@@ -45,6 +47,9 @@ public class TurtleBotLogger {
 		odometryOut = new PrintStream(directory+"log_odometry.txt");
 		odometryOut.println("# (time) x y theta gyro");
 
+		rplidarOut = new PrintStream(directory+"log_rplidar.txt");
+		rplidarOut.println("# (Number of Meas) (time #angle quality #range)");
+
 		loggerRgb = new LoggerRgb(directory,10);
 		loggerDepth = new LoggerDepth(directory,10);
 
@@ -63,6 +68,17 @@ public class TurtleBotLogger {
 
 	public void addKinectDepth( long timeSystem, long timeSensor , ImageUInt16 image ) {
 		loggerDepth.addImage(timeSystem,timeSensor, image);
+	}
+
+	public void addRPLidar( RpLidarScan scan ) {
+		rplidarOut.print(scan.used.size());
+
+		for (int i = 0; i < scan.used.size(); i++) {
+			int which = scan.used.get(i);
+
+			rplidarOut.printf("%d %d %d %d ",scan.time[which],which,scan.quality[which],scan.distance[which]);
+		}
+		rplidarOut.println();
 	}
 
 	public void stop() {

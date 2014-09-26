@@ -41,8 +41,8 @@ public class MiscOps {
 		Se3_F64 ret = new Se3_F64();
 
 		DenseMatrix64F R = ret.getR();
-		axisX.ip_times(-1);
-		axisY.ip_times(-1);
+		axisX.scale(-1);
+		axisY.scale(-1);
 		R.set(0,0,axisZ.getX());R.set(0,1,axisZ.getY());R.set(0,2,axisZ.getZ());
 		R.set(1,0,axisX.getX());R.set(1,1,axisX.getY());R.set(1,2,axisX.getZ());
 		R.set(2,0,axisY.getX());R.set(2,1,axisY.getY());R.set(2,2,axisY.getZ());

@@ -10,6 +10,8 @@ import org.openkinect.freenect.*;
 import roboticinception.CreateDriver;
 import roboticinception.MiscOps;
 import roboticinception.TurtleBotLogger;
+import roboticinception.rplidar.RpLidarHighLevelDriver;
+import roboticinception.rplidar.RpLidarScan;
 
 import java.nio.ByteBuffer;
 
@@ -25,6 +27,8 @@ public class CollectReferenceFrameDataApp {
 	MultiSpectral<ImageUInt8> rgb = new MultiSpectral<ImageUInt8>(ImageUInt8.class,1,1,3);
 	ImageUInt16 depth = new ImageUInt16(1,1);
 	boolean logImages;
+	RpLidarHighLevelDriver lrf = new RpLidarHighLevelDriver();
+	boolean logLrf;
 
 	{
 		NativeLibrary.addSearchPath("freenect", "/home/pja/projects/thirdparty/libfreenect/build/lib");
@@ -48,6 +52,27 @@ public class CollectReferenceFrameDataApp {
 		System.out.println("Battery = "+serial.getBatteryCharge());
 		MiscOps.sleep(2,"Waiting for auto shutter to do its thing");
 		logImages = true;
+
+		logLrf = true;
+		new Thread() {
+			@Override
+			public void run() {
+				RpLidarScan scan = new RpLidarScan();
+				if( lrf.initialize("/dev/ttyUSB1",0) ) {
+
+					while (logLrf) {
+						if (lrf.blockCollectScan(scan, 300)) {
+							logger.addRPLidar(scan);
+						}
+						Thread.yield();
+					}
+
+					lrf.stop();
+				} else {
+					System.err.println("Can't initialize RP-LIDAR");
+				}
+			}
+		};
 	}
 
 	public void perform() {
@@ -70,6 +95,7 @@ public class CollectReferenceFrameDataApp {
 	}
 
 	public void shutdown() {
+		logLrf = true;
 		serial.sendDrive(0,0);
 		serial.shutdown();
 		logger.stop();
