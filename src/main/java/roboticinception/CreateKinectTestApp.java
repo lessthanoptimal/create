@@ -54,7 +54,7 @@ public class CreateKinectTestApp {
 
 	public void process() throws Exception {
 		// initialize the create
-		CreateDriver serial = new CreateDriver("/dev/ttyUSB0");
+		CreateDriver serial = new CreateDriver("/dev/ttyUSB1");
 		serial.startTheRobot();
 
 		serial.sendKinect(true);

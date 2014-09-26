@@ -63,6 +63,8 @@ artifacts {
 }
 
 task collectReferenceFrame(dependsOn: classes ) << {
-    main = "roboticinception.moving.CollectReferenceFrameDataApp"
-    classpath = sourceSets.main.runtimeClasspath
+    javaexec {
+        main = "roboticinception.moving.CollectReferenceFrameDataApp"
+        classpath = sourceSets.main.runtimeClasspath
+    }
 }
