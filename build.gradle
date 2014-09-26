@@ -61,3 +61,8 @@ task sourcesJar(type: Jar) {
 artifacts {
     archives javadocJar, sourcesJar
 }
+
+task collectReferenceFrame(dependsOn: classes ) << {
+    main = "roboticinception.moving.CollectReferenceFrameDataApp"
+    classpath = sourceSets.main.runtimeClasspath
+}
