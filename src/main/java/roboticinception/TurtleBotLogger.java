@@ -79,6 +79,7 @@ public class TurtleBotLogger {
 			rplidarOut.printf(" %d %d %d %d",scan.time[which],which,scan.quality[which],scan.distance[which]);
 		}
 		rplidarOut.println();
+		rplidarOut.flush();
 	}
 
 	public void stop() {

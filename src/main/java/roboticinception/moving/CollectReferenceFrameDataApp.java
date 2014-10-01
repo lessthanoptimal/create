@@ -20,7 +20,10 @@ import java.nio.ByteBuffer;
  */
 public class CollectReferenceFrameDataApp {
 
-	public static final boolean LOG_KINECT = false;
+	public static final String DEVICE_CREATE = "/dev/ttyUSB0";
+	public static final String DEVICE_RPLIDAR = "/dev/ttyUSB1";
+
+	public static final boolean LOG_KINECT = true;
 
 	TurtleBotLogger logger;
 	Device deviceKinect;
@@ -40,7 +43,7 @@ public class CollectReferenceFrameDataApp {
 		logImages = false;
 		logger = new TurtleBotLogger();
 
-		serial = new CreateDriver("/dev/ttyUSB0");
+		serial = new CreateDriver(DEVICE_CREATE);
 		serial.startTheRobot();
 		serial.sendKinect(true);
 
@@ -61,13 +64,14 @@ public class CollectReferenceFrameDataApp {
 		new Thread() {
 			@Override
 			public void run() {
+				int totalScans = 0;
 				RpLidarScan scan = new RpLidarScan();
-				if( lrf.initialize("/dev/ttyUSB1",0) ) {
+				if( lrf.initialize(DEVICE_RPLIDAR,0) ) {
 					System.out.println("LRF initialized");
 
 					while (logLrf) {
 						if (lrf.blockCollectScan(scan, 300)) {
-							System.out.println("Got LRG scan");
+							System.out.println("Got RP-LIDAR scan "+totalScans++);
 							logger.addRPLidar(scan);
 						}
 						Thread.yield();
@@ -79,6 +83,11 @@ public class CollectReferenceFrameDataApp {
 				}
 			}
 		}.start();
+
+		// block until LRF is ready
+		while( !lrf.isInitialized() ) {
+			Thread.yield();
+		}
 	}
 
 	public void perform() {
@@ -86,12 +95,13 @@ public class CollectReferenceFrameDataApp {
 		long updateTime = 0;
 		Se2_F64 location = new Se2_F64();
 
-		serial.sendWheelVelocity(230, 180);
+		serial.sendWheelVelocity(180, 180);
+		int totalOdometry = 0;
 
-		while(timeStart+16000 > System.currentTimeMillis() ) {
+		while(timeStart+9000 > System.currentTimeMillis() ) {
 			if( serial.getSensorUpdatedTime() != updateTime ) {
 				updateTime = serial.getSensorUpdatedTime();
-				System.out.println("Logging odometry "+updateTime);
+				System.out.println("Logging odometry "+totalOdometry++);
 
 				serial.getLocation(location);
 				logger.addOdometry(updateTime,location.getX(),location.getY(),location.getYaw(),
