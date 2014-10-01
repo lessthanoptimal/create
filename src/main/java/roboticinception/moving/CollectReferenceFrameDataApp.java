@@ -20,8 +20,10 @@ import java.nio.ByteBuffer;
  */
 public class CollectReferenceFrameDataApp {
 
+	public static final boolean LOG_KINECT = false;
+
 	TurtleBotLogger logger;
-	Device device;
+	Device deviceKinect;
 	CreateDriver serial;
 
 	MultiSpectral<ImageUInt8> rgb = new MultiSpectral<ImageUInt8>(ImageUInt8.class,1,1,3);
@@ -44,10 +46,12 @@ public class CollectReferenceFrameDataApp {
 
 		System.out.println("Battery = "+serial.getBatteryCharge());
 
-		MiscOps.sleep(5,"Warming up kinect");
-		if( !initializeKinect() ) {
-			serial.shutdown();
-			System.exit(0);
+		if( LOG_KINECT ) {
+			MiscOps.sleep(5, "Warming up kinect");
+			if (!initializeKinect()) {
+				serial.shutdown();
+				System.exit(0);
+			}
 		}
 		System.out.println("Battery = "+serial.getBatteryCharge());
 		MiscOps.sleep(2,"Waiting for auto shutter to do its thing");
@@ -59,9 +63,11 @@ public class CollectReferenceFrameDataApp {
 			public void run() {
 				RpLidarScan scan = new RpLidarScan();
 				if( lrf.initialize("/dev/ttyUSB1",0) ) {
+					System.out.println("LRF initialized");
 
 					while (logLrf) {
 						if (lrf.blockCollectScan(scan, 300)) {
+							System.out.println("Got LRG scan");
 							logger.addRPLidar(scan);
 						}
 						Thread.yield();
@@ -72,7 +78,7 @@ public class CollectReferenceFrameDataApp {
 					System.err.println("Can't initialize RP-LIDAR");
 				}
 			}
-		};
+		}.start();
 	}
 
 	public void perform() {
@@ -80,9 +86,9 @@ public class CollectReferenceFrameDataApp {
 		long updateTime = 0;
 		Se2_F64 location = new Se2_F64();
 
-		serial.sendWheelVelocity(200, 200);
+		serial.sendWheelVelocity(230, 180);
 
-		while(timeStart+15000 > System.currentTimeMillis() ) {
+		while(timeStart+16000 > System.currentTimeMillis() ) {
 			if( serial.getSensorUpdatedTime() != updateTime ) {
 				updateTime = serial.getSensorUpdatedTime();
 				System.out.println("Logging odometry "+updateTime);
@@ -96,12 +102,14 @@ public class CollectReferenceFrameDataApp {
 
 	public void shutdown() {
 		logLrf = true;
-		serial.sendDrive(0,0);
+		serial.sendDrive(0, 0);
 		serial.shutdown();
 		logger.stop();
-		device.stopDepth();
-		device.stopVideo();
-		device.close();
+		if (LOG_KINECT) {
+			deviceKinect.stopDepth();
+			deviceKinect.stopVideo();
+			deviceKinect.close();
+		}
 	}
 
 	public boolean initializeKinect() {
@@ -111,25 +119,25 @@ public class CollectReferenceFrameDataApp {
 			throw new RuntimeException("No kinect found!");
 
 		try {
-			device = kinect.openDevice(0);
+			deviceKinect = kinect.openDevice(0);
 		} catch( RuntimeException e ) {
 			e.printStackTrace();
 			return false;
 		}
 
-		device.setDepthFormat(DepthFormat.REGISTERED);
-		device.setVideoFormat(VideoFormat.RGB);
+		deviceKinect.setDepthFormat(DepthFormat.REGISTERED);
+		deviceKinect.setVideoFormat(VideoFormat.RGB);
 
-		device.startDepth(new DepthHandler() {
+		deviceKinect.startDepth(new DepthHandler() {
 			@Override
 			public void onFrameReceived(FrameMode mode, ByteBuffer frame, int timestamp) {
-				processDepth(mode,frame,timestamp);
+				processDepth(mode, frame, timestamp);
 			}
 		});
-		device.startVideo(new VideoHandler() {
+		deviceKinect.startVideo(new VideoHandler() {
 			@Override
 			public void onFrameReceived(FrameMode mode, ByteBuffer frame, int timestamp) {
-				processRgb(mode,frame,timestamp);
+				processRgb(mode, frame, timestamp);
 			}
 		});
 
