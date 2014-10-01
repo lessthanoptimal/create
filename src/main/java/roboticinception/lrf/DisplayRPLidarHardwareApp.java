@@ -1,8 +1,8 @@
 package roboticinception.lrf;
 
 import boofcv.gui.image.ShowImages;
+import bubo.desc.sensors.lrf2d.Lrf2dParam;
 import bubo.gui.sensors.laser2d.LadarComponent;
-import georegression.metric.UtilAngle;
 import roboticinception.rplidar.RpLidarHighLevelDriver;
 import roboticinception.rplidar.RpLidarScan;
 
@@ -12,7 +12,7 @@ import java.awt.*;
 /**
  * @author Peter Abeles
  */
-public class DisplayRPLidarApp {
+public class DisplayRPLidarHardwareApp {
 
 
 	public static void main(String[] args) throws Exception {
@@ -23,7 +23,9 @@ public class DisplayRPLidarApp {
 		RpLidarScan scan = new RpLidarScan();
 
 		final LadarComponent gui = new LadarComponent();
-		gui.configure(0, UtilAngle.degreeToRadian(1.0 / 64.0), 5.0, RpLidarScan.N);
+		Lrf2dParam param = UtilRpLidar.createParam();
+
+		gui.configure(0, param.getSweepAngle()/param.getNumberOfScans(), 1, param.getNumberOfScans());
 		gui.setAutoRescale(true);
 		gui.setPreferredSize(new Dimension(400, 400));
 		gui.setMinimumSize(gui.getPreferredSize());

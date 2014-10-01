@@ -21,11 +21,7 @@ repositories {
 
 dependencies {
     compile files("libs/RXTXcomm.jar")
-
-    ['ip','io','calibration','geo','recognition','feature','sfm','visualize','openkinect','WebcamCapture'].
-            each { String a -> compile group: 'org.boofcv', name: a, version: '0.18' }
-
-    ['core','gui'].each{ String a -> compile group: 'org.projectbubo', name: a, version: '1-SNAPSHOT'}
+    ['apps','core','gui','io'].each{ String a -> compile group: 'org.projectbubo', name: a, version: '1-SNAPSHOT'}
 
     compile group: 'com.roboticinception', name: 'jrplidar', version: '1-SNAPSHOT'
     testCompile group: 'junit', name: 'junit', version: '4.11'
