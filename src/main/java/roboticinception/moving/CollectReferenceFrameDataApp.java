@@ -9,6 +9,7 @@ import georegression.struct.se.Se2_F64;
 import org.openkinect.freenect.*;
 import roboticinception.CreateDriver;
 import roboticinception.MiscOps;
+import roboticinception.RobotConstants;
 import roboticinception.TurtleBotLogger;
 import roboticinception.rplidar.RpLidarHighLevelDriver;
 import roboticinception.rplidar.RpLidarScan;
@@ -20,10 +21,11 @@ import java.nio.ByteBuffer;
  */
 public class CollectReferenceFrameDataApp {
 
-	public static final String DEVICE_CREATE = "/dev/ttyUSB0";
-	public static final String DEVICE_RPLIDAR = "/dev/ttyUSB1";
+	public static final String DEVICE_CREATE = RobotConstants.DEVICE_CREATE;//"/dev/ttyUSB0";
+	public static final String DEVICE_RPLIDAR = RobotConstants.DEVICE_RPLIDAR;//"/dev/ttyUSB1";
 
 	public static final boolean LOG_KINECT = true;
+	public static final boolean LOG_RPLIDAR = false;
 
 	TurtleBotLogger logger;
 	Device deviceKinect;
@@ -33,7 +35,7 @@ public class CollectReferenceFrameDataApp {
 	ImageUInt16 depth = new ImageUInt16(1,1);
 	boolean logImages;
 	RpLidarHighLevelDriver lrf = new RpLidarHighLevelDriver();
-	boolean logLrf;
+	boolean runningRPLidar;
 
 	{
 		NativeLibrary.addSearchPath("freenect", "/home/pja/projects/thirdparty/libfreenect/build/lib");
@@ -60,33 +62,35 @@ public class CollectReferenceFrameDataApp {
 		MiscOps.sleep(2,"Waiting for auto shutter to do its thing");
 		logImages = true;
 
-		logLrf = true;
-		new Thread() {
-			@Override
-			public void run() {
-				int totalScans = 0;
-				RpLidarScan scan = new RpLidarScan();
-				if( lrf.initialize(DEVICE_RPLIDAR,0) ) {
-					System.out.println("LRF initialized");
+		if( LOG_RPLIDAR ) {
+			runningRPLidar = true;
+			new Thread() {
+				@Override
+				public void run() {
+					int totalScans = 0;
+					RpLidarScan scan = new RpLidarScan();
+					if (lrf.initialize(DEVICE_RPLIDAR, 0)) {
+						System.out.println("LRF initialized");
 
-					while (logLrf) {
-						if (lrf.blockCollectScan(scan, 300)) {
-							System.out.println("Got RP-LIDAR scan "+totalScans++);
-							logger.addRPLidar(scan);
+						while (runningRPLidar) {
+							if (lrf.blockCollectScan(scan, 300)) {
+								System.out.println("Got RP-LIDAR scan " + totalScans++);
+								logger.addRPLidar(scan);
+							}
+							Thread.yield();
 						}
-						Thread.yield();
+
+						lrf.stop();
+					} else {
+						System.err.println("Can't initialize RP-LIDAR");
 					}
-
-					lrf.stop();
-				} else {
-					System.err.println("Can't initialize RP-LIDAR");
 				}
-			}
-		}.start();
+			}.start();
 
-		// block until LRF is ready
-		while( !lrf.isInitialized() ) {
-			Thread.yield();
+			// block until LRF is ready
+			while (!lrf.isInitialized()) {
+				Thread.yield();
+			}
 		}
 	}
 
@@ -111,7 +115,7 @@ public class CollectReferenceFrameDataApp {
 	}
 
 	public void shutdown() {
-		logLrf = true;
+		runningRPLidar = false;
 		serial.sendDrive(0, 0);
 		serial.shutdown();
 		logger.stop();
