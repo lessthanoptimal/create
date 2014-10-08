@@ -3,6 +3,8 @@ package roboticinception.autocalib;
 import georegression.struct.se.Se2_F64;
 
 /**
+ * Contains the observed relative motion in the gobal and child reference frame
+ *
  * @author Peter Abeles
  */
 public class Chunk {

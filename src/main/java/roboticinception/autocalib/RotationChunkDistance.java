@@ -29,9 +29,6 @@ public class RotationChunkDistance implements DistanceFromModel<Se2_F64,Chunk> {
 
 		double rotation = UtilAngle.distanceCCW(angleC, angleG);
 
-		double d = +UtilAngle.dist(expected,rotation);
-		if( d > 0.001)
-			System.out.println("distance = "+d);
 		return UtilAngle.dist(expected,rotation);
 	}
 

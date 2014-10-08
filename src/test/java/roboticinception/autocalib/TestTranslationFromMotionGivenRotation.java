@@ -11,22 +11,14 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Peter Abeles
  */
-public class TestRotationFromTranslation {
+public class TestTranslationFromMotionGivenRotation {
 	@Test
-	public void basicCCW() {
-		check(0.3);
-	}
+	public void full() {
 
-	@Test
-	public void basicCW() {
-		check(-0.4);
-	}
+		Se2_F64 child0ToWorld = new Se2_F64(0.2,0.5,0.2);
+		Se2_F64 child1ToWorld = new Se2_F64(0.4,0.1,0.6);
 
-	public void check( double heading ) {
-		Se2_F64 child0ToWorld = new Se2_F64(0.2,0.5,heading);
-		Se2_F64 child1ToWorld = new Se2_F64(0.4,0.1,heading);
-
-		Se2_F64 globalToChild = new Se2_F64(0.1,-0.2,0);
+		Se2_F64 globalToChild = new Se2_F64(0.1,-0.2,0.5);
 
 		Se2_F64 childToGlobal = globalToChild.invert(null);
 
@@ -37,7 +29,7 @@ public class TestRotationFromTranslation {
 		child0ToWorld.concat(child1ToWorld.invert(null), chunk.child);
 		global0ToWorld.concat(global1ToWorld.invert(null), chunk.global);
 
-		RotationFromTranslation alg = new RotationFromTranslation();
+		TranslationFromMotionGivenRotation alg = new TranslationFromMotionGivenRotation(childToGlobal.getYaw());
 
 		List<Chunk> chunks = new ArrayList<Chunk>();
 		chunks.add(chunk);
@@ -45,14 +37,14 @@ public class TestRotationFromTranslation {
 		Se2_F64 found = new Se2_F64();
 		alg.generate(chunks,found);
 
-		assertEquals(0, found.getX(), 1e-8);
-		assertEquals(0, found.getY(), 1e-8);
+		assertEquals(childToGlobal.getX(), found.getX(), 1e-8);
+		assertEquals(childToGlobal.getY(), found.getY(), 1e-8);
 		assertEquals(childToGlobal.getYaw(), found.getYaw(), 1e-8);
 	}
 
 	@Test
 	public void getMinimumPoints() {
-		RotationFromTranslation alg = new RotationFromTranslation();
+		TranslationFromMotionGivenRotation alg = new TranslationFromMotionGivenRotation(0);
 		assertEquals(1,alg.getMinimumPoints());
 	}
 }

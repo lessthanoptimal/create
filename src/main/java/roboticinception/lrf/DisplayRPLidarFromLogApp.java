@@ -3,6 +3,7 @@ package roboticinception.lrf;
 import boofcv.gui.image.ShowImages;
 import bubo.gui.sensors.laser2d.LadarComponent;
 import georegression.metric.UtilAngle;
+import roboticinception.log.RpLidarParser;
 import roboticinception.rplidar.RpLidarScan;
 
 import javax.swing.*;
@@ -16,7 +17,7 @@ public class DisplayRPLidarFromLogApp {
 
 	public static void main(String[] args) throws Exception {
 
-		RpLidarParser parser = new RpLidarParser("/home/pja/projects/create/log/09-26-2014-16:59:51/log_rplidar.txt");
+		RpLidarParser parser = new RpLidarParser("/home/pja/projects/create/log/10-01-2014-15:32:05/log_rplidar.txt");
 
 		final LadarComponent gui = new LadarComponent();
 		gui.configure(0, UtilAngle.degreeToRadian(1.0 / 64.0), 5.0, RpLidarScan.N);

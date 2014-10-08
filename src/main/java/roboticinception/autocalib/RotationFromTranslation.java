@@ -8,6 +8,9 @@ import org.ddogleg.fitting.modelset.ModelGenerator;
 import java.util.List;
 
 /**
+ * Given the observed motion being pure translation, estimate the rotational component of the rigid body transform
+ * from child to global.
+ *
  * @author Peter Abeles
  */
 public class RotationFromTranslation implements ModelGenerator<Se2_F64,Chunk> {

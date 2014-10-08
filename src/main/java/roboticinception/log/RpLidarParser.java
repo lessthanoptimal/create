@@ -1,4 +1,4 @@
-package roboticinception.lrf;
+package roboticinception.log;
 
 import bubo.io.text.ReadCsv;
 import roboticinception.rplidar.RpLidarScan;
