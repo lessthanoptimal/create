@@ -14,34 +14,36 @@ public class TestCalibrateFromTranslation {
 	@Test
 	public void perfect() {
 
-		LogMotion2 odometry = createLog(0.1,2,10,0.05);
-		LogMotion2 sensor = createLog(0.9,2.5,10.5,0.2);
+		double angleBtoA = 0.8;
+		LogMotion2 logA = createLog(0.1,2,10,0.05);
+		LogMotion2 logB = createLog(0.1+angleBtoA,2.5,10.5,0.2);
 
 		CalibrateFromTranslation alg = new CalibrateFromTranslation(200,0.05,0.05);
 
-		assertTrue(alg.process(odometry, sensor));
+		assertTrue(alg.process(logA, logB));
 
-		Se2_F64 found = alg.getFound();
-		assertEquals(-0.8,found.getYaw(),1e-8);
+		Se2_F64 found = alg.getTransformSensorBtoA();
+		assertEquals(angleBtoA,found.getYaw(),1e-8);
 	}
 
 	@Test
 	public void noise() {
 
-		LogMotion2 odometry = createLog(0.1,2,10,0.05);
-		LogMotion2 sensor = createLog(0.9,2.5,10.5,0.2);
+		double angleBtoA = 0.8;
+		LogMotion2 logA = createLog(0.1,2,10,0.05);
+		LogMotion2 logB = createLog(0.1+angleBtoA,2.5,10.5,0.2);
 
 		// add some crappy observations
-		odometry.getHistory().get(4).motion.set(2,3,0.4);
-		sensor.getHistory().get(10).motion.set(1, 2, -0.4);
-		sensor.getHistory().get(17).motion.set(2,3,0);
+		logA.getHistory().get(4).motion.set(2,3,0.4);
+		logB.getHistory().get(10).motion.set(1, 2, -0.4);
+		logB.getHistory().get(17).motion.set(2,3,0);
 
 		CalibrateFromTranslation alg = new CalibrateFromTranslation(200,0.0,0.05);
 
-		assertTrue(alg.process(odometry, sensor));
+		assertTrue(alg.process(logA, logB));
 
-		Se2_F64 found = alg.getFound();
-		assertEquals(-0.8,found.getYaw(),1e-8);
+		Se2_F64 found = alg.getTransformSensorBtoA();
+		assertEquals(angleBtoA,found.getYaw(),1e-8);
 	}
 
 	public LogMotion2 createLog( double angle , double startTime , double endTime , double period ) {

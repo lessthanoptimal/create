@@ -13,8 +13,8 @@ public class TestRotationChunkDistance {
 	public void basic() {
 
 		Chunk chunk = new Chunk();
-		chunk.global.set(1,0,0.1);
-		chunk.child.set(1,1,0.1);
+		chunk.sensorB_Nto0.set(1,0,0.1);
+		chunk.sensorA_Nto0.set(1,1,0.1);
 
 		RotationChunkDistance alg = new RotationChunkDistance();
 
@@ -22,8 +22,8 @@ public class TestRotationChunkDistance {
 
 		assertEquals(0,alg.computeDistance(chunk),1e-8);
 
-		chunk.global.set(1,1,0.1);
-		chunk.child.set(1,0,0.1);
+		chunk.sensorB_Nto0.set(1,1,0.1);
+		chunk.sensorA_Nto0.set(1,0,0.1);
 		assertEquals(Math.PI/2.0,alg.computeDistance(chunk),1e-8);
 	}
 }

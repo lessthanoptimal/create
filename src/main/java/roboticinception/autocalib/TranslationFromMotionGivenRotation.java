@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Given the observed motion being pure translation, estimate the rotational component of the rigid body transform
- * from child to global.
+ * from sensor B to sensor A.
  *
  * @author Peter Abeles
  */
@@ -19,23 +19,20 @@ public class TranslationFromMotionGivenRotation implements ModelGenerator<Se2_F6
 	double outC,outS;
 
 	FixedMatrix2x2_64F r_i_inv = new FixedMatrix2x2_64F();
-	Se2_F64 bToA = new Se2_F64();
 
-	public TranslationFromMotionGivenRotation( double rotationFromAToB ) {
-
-		double rotationFromBToA = -rotationFromAToB;
+	public TranslationFromMotionGivenRotation( double rotationFromBToA ) {
 
 		outC = Math.cos(rotationFromBToA);
 		outS = Math.sin(rotationFromBToA);
 	}
 
 	@Override
-	public boolean generate(List<Chunk> dataSet, Se2_F64 aToB) {
+	public boolean generate(List<Chunk> dataSet, Se2_F64 bToA) {
 
 		Chunk chunk = dataSet.get(0);
 
-		Se2_F64 a = chunk.child;
-		Se2_F64 b = chunk.global;
+		Se2_F64 a = chunk.sensorA_Nto0;
+		Se2_F64 b = chunk.sensorB_Nto0;
 
 		// R_(aj,ai) - I
 		r_i_inv.a11 =  a.c - 1;
@@ -57,8 +54,6 @@ public class TranslationFromMotionGivenRotation implements ModelGenerator<Se2_F6
 		bToA.T.y = r_i_inv.a21*x2 + r_i_inv.a22*y2;
 		bToA.c = outC;
 		bToA.s = outS;
-
-		bToA.invert(aToB);
 
 		return true;
 	}

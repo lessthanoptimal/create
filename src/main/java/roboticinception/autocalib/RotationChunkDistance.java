@@ -21,8 +21,8 @@ public class RotationChunkDistance implements DistanceFromModel<Se2_F64,Chunk> {
 
 	@Override
 	public double computeDistance(Chunk chunk) {
-		Vector2D_F64 global = chunk.global.getTranslation();
-		Vector2D_F64 child = chunk.child.getTranslation();
+		Vector2D_F64 global = chunk.sensorB_Nto0.getTranslation();
+		Vector2D_F64 child = chunk.sensorA_Nto0.getTranslation();
 
 		double angleG = Math.atan2(global.getY(), global.getX());
 		double angleC = Math.atan2(child.getY(), child.getX());

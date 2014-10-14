@@ -15,31 +15,34 @@ public class TestTranslationFromMotionGivenRotation {
 	@Test
 	public void full() {
 
-		Se2_F64 child0ToWorld = new Se2_F64(0.2,0.5,0.2);
-		Se2_F64 child1ToWorld = new Se2_F64(0.4,0.1,0.6);
+		Se2_F64 sensorA0ToWorld = new Se2_F64(0.2,0.5,0.2);
+		Se2_F64 sensorA1ToWorld = new Se2_F64(0.4,0.1,0.6);
 
-		Se2_F64 globalToChild = new Se2_F64(0.1,-0.2,0.5);
+		Se2_F64 sensorA_1to0 = sensorA1ToWorld.concat(sensorA0ToWorld.invert(null),null);
 
-		Se2_F64 childToGlobal = globalToChild.invert(null);
+		Se2_F64 BtoA = new Se2_F64(0.2,-0.15,0.1);
+		Se2_F64 AtoB = BtoA.invert(null);
 
-		Se2_F64 global0ToWorld = globalToChild.concat(child0ToWorld,null);
-		Se2_F64 global1ToWorld = globalToChild.concat(child1ToWorld,null);
+		Se2_F64 sensorB0ToWorld = BtoA.concat(sensorA0ToWorld,null);
+		Se2_F64 sensorB1ToWorld = BtoA.concat(sensorA1ToWorld,null);
+
+		Se2_F64 sensorB_1to0 = sensorB1ToWorld.concat(sensorB0ToWorld.invert(null),null);
 
 		Chunk chunk = new Chunk();
-		child0ToWorld.concat(child1ToWorld.invert(null), chunk.child);
-		global0ToWorld.concat(global1ToWorld.invert(null), chunk.global);
+		chunk.sensorA_Nto0 = sensorA_1to0;
+		chunk.sensorB_Nto0 = sensorB_1to0;
 
-		TranslationFromMotionGivenRotation alg = new TranslationFromMotionGivenRotation(childToGlobal.getYaw());
+		TranslationFromMotionGivenRotation alg = new TranslationFromMotionGivenRotation(BtoA.getYaw());
 
 		List<Chunk> chunks = new ArrayList<Chunk>();
 		chunks.add(chunk);
 
-		Se2_F64 found = new Se2_F64();
-		alg.generate(chunks,found);
+		Se2_F64 foundBtoA = new Se2_F64();
+		alg.generate(chunks, foundBtoA);
 
-		assertEquals(childToGlobal.getX(), found.getX(), 1e-8);
-		assertEquals(childToGlobal.getY(), found.getY(), 1e-8);
-		assertEquals(childToGlobal.getYaw(), found.getYaw(), 1e-8);
+		assertEquals(BtoA.getX()  , foundBtoA.getX(), 1e-8);
+		assertEquals(BtoA.getY()  , foundBtoA.getY(), 1e-8);
+		assertEquals(BtoA.getYaw(), foundBtoA.getYaw(), 1e-8);
 	}
 
 	@Test

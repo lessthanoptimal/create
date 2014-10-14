@@ -34,8 +34,8 @@ public class TestRotationFromTranslation {
 		Se2_F64 global1ToWorld = globalToChild.concat(child1ToWorld,null);
 
 		Chunk chunk = new Chunk();
-		child0ToWorld.concat(child1ToWorld.invert(null), chunk.child);
-		global0ToWorld.concat(global1ToWorld.invert(null), chunk.global);
+		child0ToWorld.concat(child1ToWorld.invert(null), chunk.sensorA_Nto0);
+		global0ToWorld.concat(global1ToWorld.invert(null), chunk.sensorB_Nto0);
 
 		RotationFromTranslation alg = new RotationFromTranslation();
 

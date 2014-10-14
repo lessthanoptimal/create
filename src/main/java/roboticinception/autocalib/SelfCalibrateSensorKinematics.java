@@ -36,7 +36,7 @@ public class SelfCalibrateSensorKinematics {
 			LogMotion2 child = m.motion.computeNoHint();
 
 			if( calibrate.process(parent,child) ) {
-				calibrate.getFound().print();
+				calibrate.getTransformSensorBtoA().print();
 			} else {
 				System.out.println("Failed to calibrate a child");
 			}
