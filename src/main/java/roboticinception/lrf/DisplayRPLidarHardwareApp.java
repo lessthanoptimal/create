@@ -3,6 +3,7 @@ package roboticinception.lrf;
 import boofcv.gui.image.ShowImages;
 import bubo.desc.sensors.lrf2d.Lrf2dParam;
 import bubo.gui.sensors.laser2d.LadarComponent;
+import roboticinception.RobotConstants;
 import roboticinception.rplidar.RpLidarHighLevelDriver;
 import roboticinception.rplidar.RpLidarScan;
 
@@ -18,14 +19,14 @@ public class DisplayRPLidarHardwareApp {
 	public static void main(String[] args) throws Exception {
 		RpLidarHighLevelDriver driver = new RpLidarHighLevelDriver();
 
-		driver.initialize("/dev/ttyUSB0",0);
+		driver.initialize(RobotConstants.DEVICE_RPLIDAR,0);
 
 		RpLidarScan scan = new RpLidarScan();
 
 		final LadarComponent gui = new LadarComponent();
 		Lrf2dParam param = UtilRpLidar.createParam();
 
-		gui.configure(0, param.getSweepAngle()/param.getNumberOfScans(), 1, param.getNumberOfScans());
+		gui.configure(0, param.getSweepAngle()/param.getNumberOfScans(), 5, param.getNumberOfScans());
 		gui.setAutoRescale(true);
 		gui.setPreferredSize(new Dimension(400, 400));
 		gui.setMinimumSize(gui.getPreferredSize());
